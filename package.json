@@ -1,0 +1,13 @@
+{
+  "name": "ai-image-app",
+  "private": true,
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:mobile": "pnpm --filter mobile start",
+    "build:backend": "pnpm --filter backend build",
+    "lint": "pnpm -r lint"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
