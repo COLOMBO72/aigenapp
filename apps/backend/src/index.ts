@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { prisma } from './lib/prisma.js';
+import { authRouter } from './modules/auth/auth.router.js';
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
+// ─── Health check ──────────────────────────────────────────────────
 app.get('/health', async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -30,6 +32,10 @@ app.get('/health', async (_req, res) => {
   }
 });
 
+// ─── Routes ────────────────────────────────────────────────────────
+app.use('/api/auth', authRouter);
+
+// ─── Graceful shutdown ─────────────────────────────────────────────
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, closing connections...');
   await prisma.$disconnect();
