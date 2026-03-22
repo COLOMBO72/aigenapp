@@ -1,6 +1,8 @@
 import { Router, Request, Response, IRouter } from 'express';
 import * as authService from './auth.service.js';
 import { RegisterRequest, LoginRequest, RefreshRequest } from './auth.types.js';
+import { authMiddleware } from '../../middleware/auth.js';
+import { prisma } from '../../lib/prisma.js';
 
 export const authRouter: IRouter = Router();
 
@@ -96,6 +98,31 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
   }
 });
 
+// ─── GET /api/auth/me ──────────────────────────────────────────────
+authRouter.get('/me', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        plan: true,
+        generationsToday: true,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ success: false, error: 'User not found' });
+      return;
+    }
+
+    res.json({ success: true, data: user });
+  } catch {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // ─── POST /api/auth/logout ─────────────────────────────────────────
 authRouter.post('/logout', async (req: Request, res: Response) => {
   try {
@@ -122,3 +149,4 @@ authRouter.post('/logout', async (req: Request, res: Response) => {
     });
   }
 });
+

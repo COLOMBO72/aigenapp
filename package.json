@@ -5,7 +5,13 @@
     "dev:backend": "pnpm --filter backend dev",
     "dev:mobile": "pnpm --filter mobile start",
     "build:backend": "pnpm --filter backend build",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "postinstall": "pnpm --filter backend prisma:generate"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "~19.2.10"
+    }
   },
   "devDependencies": {
     "typescript": "^5.4.0"
