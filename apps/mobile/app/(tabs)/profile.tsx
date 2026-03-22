@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { PLAN_LIMITS } from '@ai-image-app/shared';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuthStore();
+  const { user, logout, deleteAccount } = useAuthStore();
 
   const handleLogout = () => {
     Alert.alert('Выход', 'Вы уверены что хотите выйти?', [
@@ -19,6 +19,38 @@ export default function ProfileScreen() {
         },
       },
     ]);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Удалить аккаунт',
+      'Это действие необратимо. Все ваши данные и сгенерированные изображения будут удалены.',
+      [
+        { text: 'Отмена', style: 'cancel' },
+        {
+          text: 'Удалить',
+          style: 'destructive',
+          onPress: () => {
+            // Второе подтверждение
+            Alert.alert('Вы уверены?', 'Аккаунт и все данные будут удалены безвозвратно.', [
+              { text: 'Отмена', style: 'cancel' },
+              {
+                text: 'Да, удалить',
+                style: 'destructive',
+                onPress: async () => {
+                  try {
+                    await deleteAccount();
+                    router.replace('/(auth)/login');
+                  } catch {
+                    Alert.alert('Ошибка', 'Не удалось удалить аккаунт. Попробуйте позже.');
+                  }
+                },
+              },
+            ]);
+          },
+        },
+      ],
+    );
   };
 
   const plan = user?.plan === 'FREE' ? 'free' : 'premium';
@@ -59,10 +91,16 @@ export default function ProfileScreen() {
         </Text>
       </View>
 
-      {/* Кнопка выхода */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Выйти из аккаунта</Text>
-      </TouchableOpacity>
+      {/* Кнопки */}
+      <View style={styles.buttons}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Выйти из аккаунта</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+          <Text style={styles.deleteText}>Удалить аккаунт</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -151,9 +189,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
   },
-  logoutButton: {
+  buttons: {
     marginHorizontal: 20,
     marginTop: 32,
+    gap: 12,
+  },
+  logoutButton: {
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  logoutText: {
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  deleteButton: {
     backgroundColor: Colors.surface,
     borderRadius: 12,
     paddingVertical: 16,
@@ -161,7 +215,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.error,
   },
-  logoutText: {
+  deleteText: {
     color: Colors.error,
     fontSize: 16,
     fontWeight: '600',

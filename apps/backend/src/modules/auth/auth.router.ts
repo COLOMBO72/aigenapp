@@ -150,3 +150,24 @@ authRouter.post('/logout', async (req: Request, res: Response) => {
   }
 });
 
+// ─── DELETE /api/auth/account ──────────────────────────────────────
+authRouter.delete('/account', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+
+    // Удаляем всё связанное с пользователем (каскадно через Prisma)
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: { message: 'Account deleted successfully' },
+    });
+  } catch {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete account',
+    });
+  }
+});
