@@ -1,6 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { prisma } from '../../lib/prisma.js';
 import { redisConnection } from '../../lib/redis.js';
+import { uploadImageToStorage } from '../../utils/upload.js';
 import { GenerateJobData, SDApiResponse } from './generate.types.js';
 import dotenv from 'dotenv';
 
@@ -35,13 +36,6 @@ async function callStableDiffusion(
   return data.images[0];
 }
 
-async function saveImage(
-  base64Image: string,
-  _generationId: string
-): Promise<string> {
-  return `data:image/png;base64,${base64Image}`;
-}
-
 export function createWorker(): Worker {
   const worker = new Worker<GenerateJobData>(
     'image-generation',
@@ -56,15 +50,19 @@ export function createWorker(): Worker {
       });
 
       try {
+        // Вызываем Stable Diffusion
         const base64Image = await callStableDiffusion(prompt, width, height);
-        const imageUrl = await saveImage(base64Image, generationId);
 
+        // Загружаем в Яндекс Object Storage
+        const imageUrl = await uploadImageToStorage(base64Image, generationId);
+
+        // Сохраняем URL в БД
         await prisma.generation.update({
           where: { id: generationId },
           data: { status: 'COMPLETED', imageUrl },
         });
 
-        console.log(`✅ Generation ${generationId} completed`);
+        console.log(`✅ Generation ${generationId} completed — ${imageUrl}`);
       } catch (error) {
         await prisma.generation.update({
           where: { id: generationId },
