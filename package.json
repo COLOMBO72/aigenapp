@@ -4,7 +4,9 @@
   "scripts": {
     "dev:backend": "pnpm --filter backend dev",
     "dev:mobile": "pnpm --filter mobile start",
+    "dev:website": "pnpm --filter website dev",
     "build:backend": "pnpm --filter backend build",
+    "build:website": "pnpm --filter website build",
     "lint": "pnpm -r lint",
     "postinstall": "pnpm --filter backend prisma:generate"
   },
