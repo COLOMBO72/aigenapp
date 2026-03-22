@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { prisma } from './lib/prisma.js';
 import { authRouter } from './modules/auth/auth.router.js';
+import { generateRouter } from './modules/generate/generate.router.js';
+import { createWorker } from './modules/generate/generate.worker.js';
 
 dotenv.config();
 
@@ -34,10 +36,16 @@ app.get('/health', async (_req, res) => {
 
 // ─── Routes ────────────────────────────────────────────────────────
 app.use('/api/auth', authRouter);
+app.use('/api/generate', generateRouter);
+
+// ─── Запускаем воркер ──────────────────────────────────────────────
+const worker = createWorker();
+console.log('⚡ Generation worker started');
 
 // ─── Graceful shutdown ─────────────────────────────────────────────
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, closing connections...');
+  await worker.close();
   await prisma.$disconnect();
   process.exit(0);
 });
