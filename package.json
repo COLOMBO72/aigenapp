@@ -13,7 +13,15 @@
   "pnpm": {
     "overrides": {
       "@types/react": "~19.2.10"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "esbuild",
+      "msgpackr-extract",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
+    ]
   },
   "devDependencies": {
     "typescript": "^5.4.0"
