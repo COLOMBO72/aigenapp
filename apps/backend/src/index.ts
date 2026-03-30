@@ -63,9 +63,8 @@ process.on('SIGTERM', async () => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Backend running on http://localhost:${PORT}`);
+  console.log(`🚀 Backend running on port ${PORT}`);
   console.log(`📋 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🌐 Network: http://192.168.0.141:${PORT}`);
 });
 
 export default app;
