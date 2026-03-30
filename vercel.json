@@ -1,6 +1,15 @@
 {
-  "buildCommand": "cd packages/shared && pnpm build && cd ../../apps/website && pnpm build",
-  "outputDirectory": "apps/website/.next",
-  "installCommand": "pnpm install",
-  "framework": "nextjs"
+  "version": 2,
+  "builds": [
+    {
+      "src": "apps/website/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "apps/website/$1"
+    }
+  ]
 }

@@ -7,8 +7,7 @@
     "dev:website": "pnpm --filter website dev",
     "build:backend": "pnpm --filter backend build",
     "build:website": "pnpm --filter website build",
-    "lint": "pnpm -r lint",
-    "postinstall": "pnpm --filter backend prisma:generate"
+    "lint": "pnpm -r lint"
   },
   "pnpm": {
     "overrides": {
