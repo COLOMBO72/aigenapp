@@ -3,9 +3,29 @@ export interface User {
   id: string;
   email: string;
   username: string;
-  plan: 'free' | 'premium';
+  plan: 'FREE' | 'PREMIUM';
   generationsToday: number;
+  premiumCredits: number;
   generationsLimit: number;
+  createdAt: string;
+}
+
+// ─── Баланс ─────────────────────────────────────────────────────
+export interface Balance {
+  id: string;
+  userId: string;
+  amount: number;
+  updatedAt: string;
+}
+
+// ─── Транзакция ──────────────────────────────────────────────────
+export interface Transaction {
+  id: string;
+  userId: string;
+  type: 'DEPOSIT' | 'WITHDRAWAL' | 'SUBSCRIPTION' | 'GENERATION';
+  amount: number;
+  description: string;
+  status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'CANCELLED';
   createdAt: string;
 }
 
@@ -15,13 +35,26 @@ export interface Generation {
   userId: string;
   prompt: string;
   imageUrl: string | null;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  isPremium: boolean;
   createdAt: string;
+}
+
+// ─── Подписка ────────────────────────────────────────────────────
+export interface Subscription {
+  id: string;
+  userId: string;
+  service: 'PICTURES' | 'VPN';
+  plan: 'FREE' | 'PREMIUM';
+  status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED';
+  autoRenew: boolean;
+  expiresAt: string;
 }
 
 // ─── API запросы ─────────────────────────────────────────────────
 export interface GenerateImageRequest {
   prompt: string;
+  isPremium?: boolean;
 }
 
 export interface GenerateImageResponse {
@@ -36,23 +69,29 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-// ─── Подписка ────────────────────────────────────────────────────
-export interface Subscription {
-  id: string;
-  userId: string;
-  plan: 'premium';
-  status: 'active' | 'cancelled' | 'expired';
-  expiresAt: string;
-}
-
 // ─── Лимиты по тарифам ───────────────────────────────────────────
 export const PLAN_LIMITS = {
   free: {
     generationsPerDay: 5,
     maxResolution: '512x512',
+    premiumCredits: 0,
   },
   premium: {
     generationsPerDay: Infinity,
     maxResolution: '1024x1024',
+    premiumCredits: 50,
+  },
+} as const;
+
+// ─── Цены ────────────────────────────────────────────────────────
+export const PRICES = {
+  pictures: {
+    monthly: 299,
+    yearly: 1990,
+    perGeneration: 5,
+  },
+  vpn: {
+    monthly: 199,
+    yearly: 1490,
   },
 } as const;

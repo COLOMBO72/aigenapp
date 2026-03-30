@@ -1,5 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -14,6 +14,7 @@ model User {
   passwordHash       String
   plan               Plan           @default(FREE)
   generationsToday   Int            @default(0)
+  premiumCredits     Int            @default(0)
   lastResetAt        DateTime       @default(now())
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
@@ -21,10 +22,41 @@ model User {
   generations        Generation[]
   subscription       Subscription?
   refreshTokens      RefreshToken[]
+  balance            Balance?
+  transactions       Transaction[]
 
   @@map("users")
 }
 
+// ─── Баланс ───────────────────────────────────────────────────────
+model Balance {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  amount    Float    @default(0)
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("balances")
+}
+
+// ─── Транзакция ───────────────────────────────────────────────────
+model Transaction {
+  id          String          @id @default(uuid())
+  userId      String
+  type        TransactionType
+  amount      Float
+  description String
+  status      PaymentStatus   @default(PENDING)
+  yukassaId   String?         @unique
+  createdAt   DateTime        @default(now())
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
+}
+
+// ─── Генерация изображения ────────────────────────────────────────
 model Generation {
   id          String           @id @default(uuid())
   userId      String
@@ -34,6 +66,7 @@ model Generation {
   errorMsg    String?
   width       Int              @default(512)
   height      Int              @default(512)
+  isPremium   Boolean          @default(false)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
@@ -42,11 +75,14 @@ model Generation {
   @@map("generations")
 }
 
+// ─── Подписка ─────────────────────────────────────────────────────
 model Subscription {
   id               String             @id @default(uuid())
   userId           String             @unique
+  service          ServiceType
   plan             Plan               @default(PREMIUM)
   status           SubscriptionStatus @default(ACTIVE)
+  autoRenew        Boolean            @default(true)
   expiresAt        DateTime
   yukassaPaymentId String?            @unique
   createdAt        DateTime           @default(now())
@@ -58,6 +94,7 @@ model Subscription {
   @@map("subscriptions")
 }
 
+// ─── Платёж ───────────────────────────────────────────────────────
 model Payment {
   id             String        @id @default(uuid())
   subscriptionId String
@@ -72,6 +109,7 @@ model Payment {
   @@map("payments")
 }
 
+// ─── Refresh токены ───────────────────────────────────────────────
 model RefreshToken {
   id        String   @id @default(uuid())
   userId    String
@@ -84,9 +122,22 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+// ─── Enums ────────────────────────────────────────────────────────
 enum Plan {
   FREE
   PREMIUM
+}
+
+enum ServiceType {
+  PICTURES
+  VPN
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  SUBSCRIPTION
+  GENERATION
 }
 
 enum GenerationStatus {

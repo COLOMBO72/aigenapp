@@ -6,6 +6,10 @@ import { prisma } from './lib/prisma.js';
 import { authRouter } from './modules/auth/auth.router.js';
 import { generateRouter } from './modules/generate/generate.router.js';
 import { createWorker } from './modules/generate/generate.worker.js';
+import { balanceRouter } from './modules/balance/balance.router.js';
+
+// В routes секции добавь:
+
 
 dotenv.config();
 
@@ -13,8 +17,16 @@ const app: Express = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://velium.vercel.app',
+  ],
+  credentials: true,
+}));
 app.use(express.json());
+app.use('/api/balance', balanceRouter);
 
 // ─── Health check ──────────────────────────────────────────────────
 app.get('/health', async (_req, res) => {

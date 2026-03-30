@@ -109,12 +109,22 @@ authRouter.get('/me', authMiddleware, async (req: Request, res: Response) => {
         username: true,
         plan: true,
         generationsToday: true,
+        premiumCredits: true,
+        balance: true,
+        subscription: true,
       },
     });
 
     if (!user) {
       res.status(404).json({ success: false, error: 'User not found' });
       return;
+    }
+
+    // Создаём баланс если нет
+    if (!user.balance) {
+      await prisma.balance.create({
+        data: { userId: user.id, amount: 0 },
+      });
     }
 
     res.json({ success: true, data: user });
