@@ -21,7 +21,7 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://velium.vercel.app',
+    'https://aigenapp-backend.vercel.app/',
   ],
   credentials: true,
 }));
