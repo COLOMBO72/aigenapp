@@ -10,21 +10,23 @@ import { balanceRouter } from './modules/balance/balance.router.js';
 
 // В routes секции добавь:
 
-
 dotenv.config();
 
 const app: Express = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
 app.use(helmet());
-app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'https://aigenapp-backend.vercel.app/',
-  ],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: [
+      'http://localhost:3001',
+      'https://velium.vercel.app',
+      'https://aigenapp-backend.vercel.app',
+      /\.vercel\.app$/,
+    ],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use('/api/balance', balanceRouter);
 
