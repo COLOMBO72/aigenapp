@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev:backend": "pnpm --filter backend dev",
+    "dev:worker": "pnpm --filter backend dev:worker",
     "dev:mobile": "pnpm --filter mobile start",
     "dev:website": "pnpm --filter website dev",
     "build:backend": "pnpm --filter backend build",
