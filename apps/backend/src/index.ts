@@ -5,10 +5,7 @@ import dotenv from 'dotenv';
 import { prisma } from './lib/prisma.js';
 import { authRouter } from './modules/auth/auth.router.js';
 import { generateRouter } from './modules/generate/generate.router.js';
-import { createWorker } from './modules/generate/generate.worker.js';
 import { balanceRouter } from './modules/balance/balance.router.js';
-
-// В routes секции добавь:
 
 dotenv.config();
 
@@ -16,19 +13,16 @@ const app: Express = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
 app.use(helmet());
-app.use(
-  cors({
-    origin: [
-      'http://localhost:3001',
-      'https://velium.vercel.app',
-      'https://aigenapp-backend.vercel.app',
-      /\.vercel\.app$/,
-    ],
-    credentials: true,
-  }),
-);
+app.use(cors({
+  origin: [
+    'http://localhost:3001',
+    'https://velium.vercel.app',
+    'https://aigenapp-backend.vercel.app',
+    /\.vercel\.app$/,
+  ],
+  credentials: true,
+}));
 app.use(express.json());
-app.use('/api/balance', balanceRouter);
 
 // ─── Health check ──────────────────────────────────────────────────
 app.get('/health', async (_req, res) => {
@@ -51,15 +45,11 @@ app.get('/health', async (_req, res) => {
 // ─── Routes ────────────────────────────────────────────────────────
 app.use('/api/auth', authRouter);
 app.use('/api/generate', generateRouter);
-
-// ─── Запускаем воркер ──────────────────────────────────────────────
-const worker = createWorker();
-console.log('⚡ Generation worker started');
+app.use('/api/balance', balanceRouter);
 
 // ─── Graceful shutdown ─────────────────────────────────────────────
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, closing connections...');
-  await worker.close();
   await prisma.$disconnect();
   process.exit(0);
 });

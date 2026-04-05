@@ -2,6 +2,7 @@ export interface GenerateRequest {
   prompt: string;
   width?: number;
   height?: number;
+  isPremium?: boolean;
 }
 
 export interface GenerateJobData {
@@ -10,9 +11,10 @@ export interface GenerateJobData {
   prompt: string;
   width: number;
   height: number;
+  isPremium: boolean;
 }
 
 export interface SDApiResponse {
-  images: string[]; // base64 картинки
+  images: string[];
   info: string;
 }
