@@ -27,27 +27,21 @@ export default function TabsLayout() {
         name="chat"
         options={{
           title: 'Генерация',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 20, color }}>✨</Text>
-          ),
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>✨</Text>,
         }}
       />
       <Tabs.Screen
         name="gallery"
         options={{
           title: 'Галерея',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 20, color }}>🖼️</Text>
-          ),
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>🖼️</Text>,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Профиль',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 20, color }}>👤</Text>
-          ),
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>👤</Text>,
         }}
       />
     </Tabs>

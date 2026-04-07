@@ -2,15 +2,16 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import { storage } from './storage';
 
-const BASE_URL = __DEV__
-  ? Platform.OS === 'web'
-    ? 'http://localhost:3000'
-    : 'http://192.168.0.141:3000'
-  : 'https://your-production-url.com';
+// const BASE_URL = __DEV__
+//   ? Platform.OS === 'web'
+//     ? 'http://localhost:3000'
+//     : 'http://192.168.0.141:3000'
+//   : 'https://backend-production-23ab.up.railway.app';
+const BASE_URL = 'https://backend-production-23ab.up.railway.app';
 
 export const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 30000,
+  timeout: 60000, // 60 сек — генерация может занять время
   headers: {
     'Content-Type': 'application/json',
   },
@@ -40,7 +41,6 @@ api.interceptors.response.use(
 
         const { accessToken } = response.data.data;
         await storage.setItem('accessToken', accessToken);
-
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch {
@@ -50,5 +50,5 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );

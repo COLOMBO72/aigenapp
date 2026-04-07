@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { Colors } from '@/constants/color';
 import { useAuthStore } from '@/store/auth.store';
+import { Linking } from 'react-native';
 import { PLAN_LIMITS } from '@ai-image-app/shared';
 
 export default function ProfileScreen() {
@@ -78,7 +79,10 @@ export default function ProfileScreen() {
             {user?.plan === 'FREE' ? '🆓 Бесплатный тариф' : '⭐ Premium'}
           </Text>
           {user?.plan === 'FREE' && (
-            <TouchableOpacity style={styles.upgradeButton}>
+            <TouchableOpacity
+              style={styles.upgradeButton}
+              onPress={() => Linking.openURL('https://aigenapp-backend.vercel.app')}
+            >
               <Text style={styles.upgradeText}>Улучшить</Text>
             </TouchableOpacity>
           )}
@@ -89,6 +93,21 @@ export default function ProfileScreen() {
         <Text style={styles.planResolution}>
           Макс. разрешение: {PLAN_LIMITS[plan].maxResolution}
         </Text>
+        {user?.plan === 'PREMIUM' && (
+          <Text style={styles.planCredits}>⭐ Premium кредитов: {user?.premiumCredits || 0}</Text>
+        )}
+      </View>
+
+      {/* Баланс */}
+      <View style={styles.balanceCard}>
+        <Text style={styles.balanceTitle}>💰 Баланс</Text>
+        <Text style={styles.balanceAmount}>{user?.balance?.amount?.toFixed(2) || '0.00'}₽</Text>
+        <TouchableOpacity
+          style={styles.topUpButton}
+          onPress={() => Linking.openURL('https://aigenapp-backend.vercel.app/dashboard')}
+        >
+          <Text style={styles.topUpText}>Пополнить на сайте →</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Кнопки */}
@@ -136,6 +155,38 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+  },
+  planCredits: {
+    fontSize: 14,
+    color: '#f59e0b',
+    fontWeight: '600',
+  },
+  balanceCard: {
+    marginHorizontal: 20,
+    marginTop: 16,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    gap: 8,
+  },
+  balanceTitle: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  balanceAmount: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: Colors.text,
+  },
+  topUpButton: {
+    marginTop: 4,
+  },
+  topUpText: {
+    fontSize: 14,
+    color: Colors.primaryLight,
+    fontWeight: '600',
   },
   avatarText: {
     fontSize: 32,

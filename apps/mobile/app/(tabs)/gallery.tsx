@@ -22,6 +22,7 @@ interface Generation {
   prompt: string;
   imageUrl: string | null;
   status: string;
+  isPremium: boolean;
   createdAt: string;
 }
 
@@ -56,6 +57,11 @@ export default function GalleryScreen() {
       activeOpacity={0.8}
     >
       <Image source={{ uri: item.imageUrl! }} style={styles.image} resizeMode="cover" />
+      {item.isPremium && (
+        <View style={styles.premiumBadge}>
+          <Text style={styles.premiumBadgeText}>⭐</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 
@@ -170,6 +176,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: Colors.text,
+  },
+  premiumBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  premiumBadgeText: {
+    fontSize: 12,
   },
   emptySubtext: {
     fontSize: 14,

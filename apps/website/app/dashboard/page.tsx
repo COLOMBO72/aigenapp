@@ -514,7 +514,7 @@ export default function DashboardPage() {
               Не подключён
             </p>
             <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '16px' }}>
-              7 дней бесплатно
+              5 дней бесплатно
             </p>
             <a
               href="/services/vpn"

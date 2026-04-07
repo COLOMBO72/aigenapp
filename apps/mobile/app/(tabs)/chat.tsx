@@ -9,11 +9,14 @@ import {
   Platform,
   ActivityIndicator,
   Dimensions,
+  Switch,
   Image,
 } from 'react-native';
 import { useState, useRef } from 'react';
 import { Colors } from '@/constants/color';
 import { api } from '@/services/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuthStore } from '@/store/auth.store';
 
 const { width } = Dimensions.get('window');
 
@@ -22,52 +25,85 @@ interface Message {
   type: 'user' | 'image' | 'error' | 'loading';
   content: string;
   imageUrl?: string;
+  isPremium?: boolean;
 }
 
 export default function ChatScreen() {
+  const { user, refreshUser } = useAuthStore();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '0',
       type: 'image',
-      content: 'Привет! Опиши что хочешь увидеть и я сгенерирую картинку ✨',
+      content:
+        'Привет! Опиши что хочешь увидеть ✨\n\nБесплатно: Flux Schnell (быстро)\nPremium: Flux Dev (высокое качество)',
     },
   ]);
   const [prompt, setPrompt] = useState('');
+  const [isPremium, setIsPremium] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
+
+  const canUsePremium = user?.plan === 'PREMIUM';
+  const premiumCredits = user?.premiumCredits || 0;
+  const balance = user?.balance?.amount || 0;
 
   const handleGenerate = async () => {
     if (!prompt.trim() || isGenerating) return;
+
+    // Проверяем доступность Premium
+    if (isPremium && !canUsePremium) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          type: 'error',
+          content:
+            'Premium генерация доступна только с подпиской VIP. Перейди в Профиль чтобы улучшить тариф.',
+        },
+      ]);
+      return;
+    }
+
+    if (isPremium && premiumCredits === 0 && balance < 5) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          type: 'error',
+          content: `Недостаточно средств. Кредиты: ${premiumCredits}, Баланс: ${balance}₽. Нужно минимум 5₽.`,
+        },
+      ]);
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
       content: prompt.trim(),
+      isPremium,
     };
 
     const loadingMessage: Message = {
       id: (Date.now() + 1).toString(),
       type: 'loading',
-      content: 'Генерирую изображение...',
+      content: isPremium ? 'Генерирую Premium изображение...' : 'Генерирую изображение...',
     };
 
     setMessages((prev) => [...prev, userMessage, loadingMessage]);
     setPrompt('');
     setIsGenerating(true);
 
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
 
     try {
-      // Отправляем запрос на генерацию
       const response = await api.post('/api/generate', {
         prompt: userMessage.content,
+        isPremium,
       });
 
       const { generationId } = response.data.data;
 
-      // Поллинг статуса каждые 3 секунды
       const pollStatus = async (): Promise<void> => {
         const statusResponse = await api.get(`/api/generate/${generationId}`);
         const generation = statusResponse.data.data;
@@ -81,29 +117,24 @@ export default function ChatScreen() {
                     type: 'image',
                     content: userMessage.content,
                     imageUrl: generation.imageUrl,
+                    isPremium,
                   }
                 : msg,
             ),
           );
           setIsGenerating(false);
-          setTimeout(() => {
-            flatListRef.current?.scrollToEnd({ animated: true });
-          }, 100);
+          await refreshUser(); // Обновляем кредиты и баланс
+          setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
         } else if (generation.status === 'FAILED') {
           setMessages((prev) =>
             prev.map((msg) =>
               msg.type === 'loading'
-                ? {
-                    id: msg.id,
-                    type: 'error',
-                    content: generation.errorMsg || 'Ошибка генерации',
-                  }
+                ? { id: msg.id, type: 'error', content: generation.errorMsg || 'Ошибка генерации' }
                 : msg,
             ),
           );
           setIsGenerating(false);
         } else {
-          // Ещё генерируется — ждём
           await new Promise((resolve) => setTimeout(resolve, 3000));
           return pollStatus();
         }
@@ -129,8 +160,11 @@ export default function ChatScreen() {
   const renderMessage = ({ item }: { item: Message }) => {
     if (item.type === 'user') {
       return (
-        <View style={styles.userMessage}>
-          <Text style={styles.userMessageText}>{item.content}</Text>
+        <View style={styles.userMessageContainer}>
+          {item.isPremium && <Text style={styles.premiumBadge}>⭐ Premium</Text>}
+          <View style={styles.userMessage}>
+            <Text style={styles.userMessageText}>{item.content}</Text>
+          </View>
         </View>
       );
     }
@@ -140,7 +174,7 @@ export default function ChatScreen() {
         <View style={styles.botMessage}>
           <View style={styles.loadingContainer}>
             <ActivityIndicator color={Colors.primary} size="small" />
-            <Text style={styles.loadingText}>Генерирую изображение...</Text>
+            <Text style={styles.loadingText}>{item.content}</Text>
           </View>
         </View>
       );
@@ -156,11 +190,11 @@ export default function ChatScreen() {
       );
     }
 
-    // image или приветствие
     return (
       <View style={styles.botMessage}>
         {item.imageUrl ? (
           <View>
+            {item.isPremium && <Text style={styles.premiumImageBadge}>⭐ Premium — Flux Dev</Text>}
             <Image
               source={{ uri: item.imageUrl }}
               style={styles.generatedImage}
@@ -183,8 +217,14 @@ export default function ChatScreen() {
     >
       {/* Заголовок */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>✨ ImageAI</Text>
-        <Text style={styles.headerSubtitle}>Stable Diffusion</Text>
+        <Text style={styles.headerTitle}>✨ Velium Pictures</Text>
+        {canUsePremium && (
+          <Text style={styles.headerSubtitle}>
+            {premiumCredits > 0
+              ? `${premiumCredits} Premium кредитов • ${balance.toFixed(0)}₽`
+              : `Баланс: ${balance.toFixed(0)}₽`}
+          </Text>
+        )}
       </View>
 
       {/* Список сообщений */}
@@ -198,11 +238,26 @@ export default function ChatScreen() {
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
       />
 
+      {/* Переключатель Premium */}
+      {canUsePremium && (
+        <View style={styles.premiumToggle}>
+          <Text style={styles.premiumToggleLabel}>
+            {isPremium ? '⭐ Flux Dev (Premium)' : '⚡ Flux Schnell (Free)'}
+          </Text>
+          <Switch
+            value={isPremium}
+            onValueChange={setIsPremium}
+            trackColor={{ false: Colors.border, true: Colors.primary }}
+            thumbColor={Colors.text}
+          />
+        </View>
+      )}
+
       {/* Поле ввода */}
-      <View style={styles.inputContainer}>
+      <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 8 }]}>
         <TextInput
           style={styles.input}
-          placeholder="Опиши изображение..."
+          placeholder={isPremium ? 'Промпт для Premium генерации...' : 'Опиши изображение...'}
           placeholderTextColor={Colors.textMuted}
           value={prompt}
           onChangeText={setPrompt}
@@ -211,11 +266,15 @@ export default function ChatScreen() {
           editable={!isGenerating}
         />
         <TouchableOpacity
-          style={[styles.sendButton, (!prompt.trim() || isGenerating) && styles.sendButtonDisabled]}
+          style={[
+            styles.sendButton,
+            isPremium && styles.sendButtonPremium,
+            (!prompt.trim() || isGenerating) && styles.sendButtonDisabled,
+          ]}
           onPress={handleGenerate}
           disabled={!prompt.trim() || isGenerating}
         >
-          <Text style={styles.sendButtonText}>{isGenerating ? '⏳' : '🚀'}</Text>
+          <Text style={styles.sendButtonText}>{isGenerating ? '⏳' : isPremium ? '⭐' : '🚀'}</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -242,15 +301,24 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 2,
+    color: Colors.primaryLight,
+    marginTop: 4,
   },
   messagesList: {
     padding: 16,
     gap: 12,
   },
-  userMessage: {
+  userMessageContainer: {
     alignSelf: 'flex-end',
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  premiumBadge: {
+    fontSize: 11,
+    color: Colors.warning,
+    fontWeight: '600',
+  },
+  userMessage: {
     backgroundColor: Colors.primary,
     borderRadius: 18,
     borderBottomRightRadius: 4,
@@ -304,6 +372,12 @@ const styles = StyleSheet.create({
     color: Colors.error,
     fontSize: 14,
   },
+  premiumImageBadge: {
+    fontSize: 11,
+    color: Colors.warning,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
   generatedImage: {
     width: width * 0.7,
     height: width * 0.7,
@@ -315,12 +389,26 @@ const styles = StyleSheet.create({
     marginTop: 6,
     paddingHorizontal: 4,
   },
+  premiumToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    backgroundColor: Colors.surface,
+  },
+  premiumToggleLabel: {
+    fontSize: 14,
+    color: Colors.text,
+    fontWeight: '600',
+  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 12,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     gap: 10,
@@ -345,6 +433,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  sendButtonPremium: {
+    backgroundColor: '#f59e0b',
   },
   sendButtonDisabled: {
     opacity: 0.4,
