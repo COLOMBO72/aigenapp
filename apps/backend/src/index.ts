@@ -6,6 +6,7 @@ import { prisma } from './lib/prisma.js';
 import { authRouter } from './modules/auth/auth.router.js';
 import { generateRouter } from './modules/generate/generate.router.js';
 import { balanceRouter } from './modules/balance/balance.router.js';
+import { paymentRouter } from './modules/payment/payment.router.js';
 
 dotenv.config();
 
@@ -13,15 +14,17 @@ const app: Express = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
 app.use(helmet());
-app.use(cors({
-  origin: [
-    'http://localhost:3001',
-    'https://velium.vercel.app',
-    'https://aigenapp-backend.vercel.app',
-    /\.vercel\.app$/,
-  ],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: [
+      'http://localhost:3001',
+      'https://velium.vercel.app',
+      'https://aigenapp-backend.vercel.app',
+      /\.vercel\.app$/,
+    ],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 // ─── Health check ──────────────────────────────────────────────────
@@ -46,6 +49,7 @@ app.get('/health', async (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/generate', generateRouter);
 app.use('/api/balance', balanceRouter);
+app.use('/api/payment', paymentRouter);
 
 // ─── Graceful shutdown ─────────────────────────────────────────────
 process.on('SIGTERM', async () => {
