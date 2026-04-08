@@ -15,6 +15,8 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const [topUpAmount, setTopUpAmount] = useState(299);
   const [isTopUpLoading, setIsTopUpLoading] = useState(false);
+  const [customAmount, setCustomAmount] = useState(false);
+  const [customValue, setCustomValue] = useState('');
 
   // Форма логина
   const [email, setEmail] = useState('');
@@ -95,16 +97,16 @@ export default function DashboardPage() {
   };
 
   const handleTopUp = async () => {
-  setIsTopUpLoading(true);
-  try {
-    const response = await paymentApi.create(topUpAmount);
-    window.location.href = response.data.confirmationUrl;
-  } catch (error: any) {
-    alert(error?.message || 'Ошибка создания платежа');
-  } finally {
-    setIsTopUpLoading(false);
-  }
-};
+    setIsTopUpLoading(true);
+    try {
+      const response = await paymentApi.create(topUpAmount);
+      window.location.href = response.data.confirmationUrl;
+    } catch (error: any) {
+      alert(error?.message || 'Ошибка создания платежа');
+    } finally {
+      setIsTopUpLoading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -438,54 +440,108 @@ export default function DashboardPage() {
           }}
         >
           {/* Баланс */}
-<div style={{ backgroundColor: '#141414', borderRadius: '16px', padding: '24px', border: '1px solid #2a2a2a' }}>
-  <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '8px' }}>Баланс</p>
-  <p style={{ fontSize: '32px', fontWeight: 800, color: '#ffffff', marginBottom: '12px' }}>
-    {balance.toFixed(2)}₽
-  </p>
+          <div
+            style={{
+              backgroundColor: '#141414',
+              borderRadius: '16px',
+              padding: '24px',
+              border: '1px solid #2a2a2a',
+            }}
+          >
+            <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '8px' }}>Баланс</p>
+            <p
+              style={{ fontSize: '32px', fontWeight: 800, color: '#ffffff', marginBottom: '12px' }}
+            >
+              {balance.toFixed(2)}₽
+            </p>
 
-  {/* Выбор суммы */}
-  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-    {[100, 299, 500, 1000].map((amount) => (
-      <button
-        key={amount}
-        onClick={() => setTopUpAmount(amount)}
-        style={{
-          padding: '6px 12px',
-          borderRadius: '8px',
-          fontSize: '13px',
-          fontWeight: 600,
-          border: '1px solid',
-          borderColor: topUpAmount === amount ? '#7c3aed' : '#2a2a2a',
-          backgroundColor: topUpAmount === amount ? 'rgba(124,58,237,0.15)' : '#0a0a0a',
-          color: topUpAmount === amount ? '#a78bfa' : '#a1a1aa',
-          cursor: 'pointer',
-        }}
-      >
-        {amount}₽
-      </button>
-    ))}
-  </div>
+            {/* Выбор суммы */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+              {[100, 299, 500, 1000].map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => {
+                    setTopUpAmount(amount);
+                    setCustomAmount(false);
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    border: '1px solid',
+                    borderColor: topUpAmount === amount && !customAmount ? '#7c3aed' : '#2a2a2a',
+                    backgroundColor:
+                      topUpAmount === amount && !customAmount ? 'rgba(124,58,237,0.15)' : '#0a0a0a',
+                    color: topUpAmount === amount && !customAmount ? '#a78bfa' : '#a1a1aa',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {amount}₽
+                </button>
+              ))}
+              <button
+                onClick={() => setCustomAmount(true)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  border: '1px solid',
+                  borderColor: customAmount ? '#7c3aed' : '#2a2a2a',
+                  backgroundColor: customAmount ? 'rgba(124,58,237,0.15)' : '#0a0a0a',
+                  color: customAmount ? '#a78bfa' : '#a1a1aa',
+                  cursor: 'pointer',
+                }}
+              >
+                Другая
+              </button>
+            </div>
 
-  <button
-    onClick={handleTopUp}
-    disabled={isTopUpLoading}
-    style={{
-      width: '100%',
-      background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
-      color: 'white',
-      padding: '11px',
-      borderRadius: '10px',
-      fontSize: '14px',
-      fontWeight: 600,
-      border: 'none',
-      cursor: isTopUpLoading ? 'not-allowed' : 'pointer',
-      opacity: isTopUpLoading ? 0.7 : 1,
-    }}
-  >
-    {isTopUpLoading ? 'Создаём платёж...' : `Пополнить на ${topUpAmount}₽`}
-  </button>
-</div>
+            {customAmount && (
+              <input
+                type="number"
+                placeholder="От 50₽"
+                min={50}
+                value={customValue}
+                onChange={(e) => {
+                  setCustomValue(e.target.value);
+                  setTopUpAmount(parseInt(e.target.value) || 50);
+                }}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#0a0a0a',
+                  border: '1px solid #7c3aed',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  color: '#ffffff',
+                  outline: 'none',
+                  marginBottom: '12px',
+                  boxSizing: 'border-box',
+                }}
+              />
+            )}
+
+            <button
+              onClick={handleTopUp}
+              disabled={isTopUpLoading}
+              style={{
+                width: '100%',
+                background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                color: 'white',
+                padding: '11px',
+                borderRadius: '10px',
+                fontSize: '14px',
+                fontWeight: 600,
+                border: 'none',
+                cursor: isTopUpLoading ? 'not-allowed' : 'pointer',
+                opacity: isTopUpLoading ? 0.7 : 1,
+              }}
+            >
+              {isTopUpLoading ? 'Создаём платёж...' : `Пополнить на ${topUpAmount}₽`}
+            </button>
+          </div>
 
           {/* Pictures */}
           <div
@@ -498,16 +554,25 @@ export default function DashboardPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <span style={{ fontSize: '16px' }}>🎨</span>
-              <p style={{ fontSize: '13px', color: '#a1a1aa' }}>Velium Pictures</p>
+              <p style={{ fontSize: '13px', color: '#a1a1aa' }}>Velium Pictures (Имагеген)</p>
             </div>
             <p style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', marginBottom: '4px' }}>
               {isPremium ? 'VIP' : 'Free'}
             </p>
-            <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '16px' }}>
+            <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '8px' }}>
               {isPremium
                 ? `${user?.premiumCredits || 0} Premium генераций осталось`
                 : `${user?.generationsToday || 0}/5 генераций сегодня`}
             </p>
+            <div style={{ marginBottom: '16px' }}>
+              <p style={{ fontSize: '13px', color: '#52525b', marginBottom: '4px' }}>
+                💎 VIP подписка:
+              </p>
+              <p style={{ fontSize: '13px', color: '#a78bfa' }}>299₽/мес · 1 990₽/год</p>
+              <p style={{ fontSize: '12px', color: '#52525b', marginTop: '4px' }}>
+                +5₽ за доп. Premium генерацию
+              </p>
+            </div>
             <a
               href="/services/pictures"
               style={{
@@ -543,9 +608,13 @@ export default function DashboardPage() {
             <p style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', marginBottom: '4px' }}>
               Не подключён
             </p>
-            <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '16px' }}>
-              5 дней бесплатно
-            </p>
+            <div style={{ marginBottom: '16px' }}>
+              <p style={{ fontSize: '13px', color: '#52525b', marginBottom: '4px' }}>📋 Тарифы:</p>
+              <p style={{ fontSize: '13px', color: '#38bdf8' }}>219₽/мес · 1 890₽/год</p>
+              <p style={{ fontSize: '12px', color: '#22c55e', marginTop: '4px' }}>
+                🎁 5 дней бесплатно
+              </p>
+            </div>
             <a
               href="/services/vpn"
               style={{
@@ -718,8 +787,12 @@ export default function DashboardPage() {
                     </span>
                     <div>
                       <p style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff' }}>
-                        {tx.description}
-                      </p>
+  {tx.description}
+</p>
+<p style={{ fontSize: '12px', color: tx.status === 'PENDING' ? '#f59e0b' : tx.status === 'FAILED' || tx.status === 'CANCELLED' ? '#ef4444' : '#22c55e' }}>
+  {tx.status === 'PENDING' ? '⏳ Ожидает оплаты' : tx.status === 'SUCCEEDED' ? '✅ Выполнено' : '❌ Отменено'}
+</p>
+<p style={{ fontSize: '12px', color: '#52525b' }}></p>
                       <p style={{ fontSize: '12px', color: '#52525b' }}>
                         {new Date(tx.createdAt).toLocaleDateString('ru-RU', {
                           day: 'numeric',
@@ -734,10 +807,10 @@ export default function DashboardPage() {
                     style={{
                       fontSize: '15px',
                       fontWeight: 700,
-                      color: tx.type === 'DEPOSIT' ? '#22c55e' : '#ef4444',
+                      color: tx.status === 'PENDING' ? '#f59e0b' : tx.type === 'DEPOSIT' ? '#22c55e' : '#ef4444',
                     }}
                   >
-                    {tx.type === 'DEPOSIT' ? '+' : '-'}
+                    {tx.status === 'PENDING' ? '' : tx.type === 'DEPOSIT' ? '+' : '-'}
                     {Math.abs(tx.amount)}₽
                   </p>
                 </div>
