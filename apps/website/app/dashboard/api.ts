@@ -39,7 +39,13 @@ export const authApi = {
 
   me: () => apiRequest<{ success: boolean; data: any }>('/api/auth/me'),
 };
-
+export const paymentApi = {
+  create: (amount: number) =>
+    apiRequest<{ success: boolean; data: { paymentId: string; confirmationUrl: string } }>(
+      '/api/payment/create',
+      { method: 'POST', body: JSON.stringify({ amount }) }
+    ),
+};
 export const balanceApi = {
   get: () => apiRequest<{ success: boolean; data: any }>('/api/balance'),
   transactions: () => apiRequest<{ success: boolean; data: any[] }>('/api/balance/transactions'),

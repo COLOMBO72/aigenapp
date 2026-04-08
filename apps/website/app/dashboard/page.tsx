@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { authApi, balanceApi } from './api';
+import { authApi, balanceApi, paymentApi } from './api';
 import { setTokens, clearTokens, getToken } from './auth';
 
 type Screen = 'login' | 'register' | 'dashboard';
@@ -13,6 +13,8 @@ export default function DashboardPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [topUpAmount, setTopUpAmount] = useState(299);
+  const [isTopUpLoading, setIsTopUpLoading] = useState(false);
 
   // Форма логина
   const [email, setEmail] = useState('');
@@ -91,6 +93,18 @@ export default function DashboardPage() {
     setUser(null);
     setScreen('login');
   };
+
+  const handleTopUp = async () => {
+  setIsTopUpLoading(true);
+  try {
+    const response = await paymentApi.create(topUpAmount);
+    window.location.href = response.data.confirmationUrl;
+  } catch (error: any) {
+    alert(error?.message || 'Ошибка создания платежа');
+  } finally {
+    setIsTopUpLoading(false);
+  }
+};
 
   if (isLoading) {
     return (
@@ -424,38 +438,54 @@ export default function DashboardPage() {
           }}
         >
           {/* Баланс */}
-          <div
-            style={{
-              backgroundColor: '#141414',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #2a2a2a',
-            }}
-          >
-            <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '8px' }}>Баланс</p>
-            <p
-              style={{ fontSize: '32px', fontWeight: 800, color: '#ffffff', marginBottom: '16px' }}
-            >
-              {balance.toFixed(2)}₽
-            </p>
-            <button
-              disabled
-              style={{
-                width: '100%',
-                backgroundColor: 'rgba(124,58,237,0.15)',
-                color: '#a78bfa',
-                padding: '10px',
-                borderRadius: '10px',
-                fontSize: '13px',
-                fontWeight: 600,
-                border: '1px solid rgba(124,58,237,0.3)',
-                cursor: 'not-allowed',
-                opacity: 0.7,
-              }}
-            >
-              Пополнить скоро
-            </button>
-          </div>
+<div style={{ backgroundColor: '#141414', borderRadius: '16px', padding: '24px', border: '1px solid #2a2a2a' }}>
+  <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '8px' }}>Баланс</p>
+  <p style={{ fontSize: '32px', fontWeight: 800, color: '#ffffff', marginBottom: '12px' }}>
+    {balance.toFixed(2)}₽
+  </p>
+
+  {/* Выбор суммы */}
+  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+    {[100, 299, 500, 1000].map((amount) => (
+      <button
+        key={amount}
+        onClick={() => setTopUpAmount(amount)}
+        style={{
+          padding: '6px 12px',
+          borderRadius: '8px',
+          fontSize: '13px',
+          fontWeight: 600,
+          border: '1px solid',
+          borderColor: topUpAmount === amount ? '#7c3aed' : '#2a2a2a',
+          backgroundColor: topUpAmount === amount ? 'rgba(124,58,237,0.15)' : '#0a0a0a',
+          color: topUpAmount === amount ? '#a78bfa' : '#a1a1aa',
+          cursor: 'pointer',
+        }}
+      >
+        {amount}₽
+      </button>
+    ))}
+  </div>
+
+  <button
+    onClick={handleTopUp}
+    disabled={isTopUpLoading}
+    style={{
+      width: '100%',
+      background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+      color: 'white',
+      padding: '11px',
+      borderRadius: '10px',
+      fontSize: '14px',
+      fontWeight: 600,
+      border: 'none',
+      cursor: isTopUpLoading ? 'not-allowed' : 'pointer',
+      opacity: isTopUpLoading ? 0.7 : 1,
+    }}
+  >
+    {isTopUpLoading ? 'Создаём платёж...' : `Пополнить на ${topUpAmount}₽`}
+  </button>
+</div>
 
           {/* Pictures */}
           <div
