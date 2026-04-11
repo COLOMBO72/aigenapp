@@ -17,7 +17,7 @@ async function handleWebhook(req: Request, res: Response) {
     const event = req.body;
     console.log('Webhook received:', JSON.stringify(event));
 
-    if (event.type === 'payment.succeeded') {
+    if (event.event === 'payment.succeeded' || event.type === 'payment.succeeded') {
       const paymentId = event.object.id;
       const userId = event.object.metadata?.userId;
       const amount = parseFloat(event.object.amount.value);
@@ -41,7 +41,7 @@ async function handleWebhook(req: Request, res: Response) {
       console.log(`✅ Balance topped up: ${amount}₽ for user ${userId}`);
     }
 
-    if (event.type === 'payment.canceled') {
+    if (event.event === 'payment.canceled' || event.type === 'payment.canceled') {
       const paymentId = event.object.id;
       await prisma.transaction.updateMany({
         where: { yukassaId: paymentId },
