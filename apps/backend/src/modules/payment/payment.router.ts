@@ -115,3 +115,5 @@ paymentRouter.post('/create', authMiddleware, async (req: Request, res: Response
     res.status(500).json({ success: false, error: 'Ошибка создания платежа' });
   }
 });
+
+//getspost
