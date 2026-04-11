@@ -554,7 +554,7 @@ export default function DashboardPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <span style={{ fontSize: '16px' }}>🎨</span>
-              <p style={{ fontSize: '13px', color: '#a1a1aa' }}>Velium Pictures (Имагеген)</p>
+              <p style={{ fontSize: '13px', color: '#a1a1aa' }}>Velium Pictures</p>
             </div>
             <p style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', marginBottom: '4px' }}>
               {isPremium ? 'VIP' : 'Free'}
@@ -787,12 +787,26 @@ export default function DashboardPage() {
                     </span>
                     <div>
                       <p style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff' }}>
-  {tx.description}
-</p>
-<p style={{ fontSize: '12px', color: tx.status === 'PENDING' ? '#f59e0b' : tx.status === 'FAILED' || tx.status === 'CANCELLED' ? '#ef4444' : '#22c55e' }}>
-  {tx.status === 'PENDING' ? '⏳ Ожидает оплаты' : tx.status === 'SUCCEEDED' ? '✅ Выполнено' : '❌ Отменено'}
-</p>
-<p style={{ fontSize: '12px', color: '#52525b' }}></p>
+                        {tx.description}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: '12px',
+                          color:
+                            tx.status === 'PENDING'
+                              ? '#f59e0b'
+                              : tx.status === 'FAILED' || tx.status === 'CANCELLED'
+                                ? '#ef4444'
+                                : '#22c55e',
+                        }}
+                      >
+                        {tx.status === 'PENDING'
+                          ? '⏳ Ожидает оплаты'
+                          : tx.status === 'SUCCEEDED'
+                            ? '✅ Выполнено'
+                            : '❌ Отменено'}
+                      </p>
+                      <p style={{ fontSize: '12px', color: '#52525b' }}></p>
                       <p style={{ fontSize: '12px', color: '#52525b' }}>
                         {new Date(tx.createdAt).toLocaleDateString('ru-RU', {
                           day: 'numeric',
@@ -807,7 +821,12 @@ export default function DashboardPage() {
                     style={{
                       fontSize: '15px',
                       fontWeight: 700,
-                      color: tx.status === 'PENDING' ? '#f59e0b' : tx.type === 'DEPOSIT' ? '#22c55e' : '#ef4444',
+                      color:
+                        tx.status === 'PENDING'
+                          ? '#f59e0b'
+                          : tx.type === 'DEPOSIT'
+                            ? '#22c55e'
+                            : '#ef4444',
                     }}
                   >
                     {tx.status === 'PENDING' ? '' : tx.type === 'DEPOSIT' ? '+' : '-'}
