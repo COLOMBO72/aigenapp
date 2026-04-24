@@ -20,7 +20,6 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
 
   return data;
 }
-
 export const authApi = {
   login: (email: string, password: string) =>
     apiRequest<{
@@ -49,4 +48,13 @@ export const paymentApi = {
 export const balanceApi = {
   get: () => apiRequest<{ success: boolean; data: any }>('/api/balance'),
   transactions: () => apiRequest<{ success: boolean; data: any[] }>('/api/balance/transactions'),
+};
+export const subscriptionApi = {
+  purchase: (plan: string) =>
+    apiRequest<{ success: boolean; data: any }>(
+      '/api/subscription/purchase',
+      { method: 'POST', body: JSON.stringify({ plan }) }
+    ),
+  status: () =>
+    apiRequest<{ success: boolean; data: any }>('/api/subscription/status'),
 };

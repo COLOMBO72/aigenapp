@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { authApi, balanceApi, paymentApi } from './api';
+import { authApi, balanceApi, paymentApi, subscriptionApi } from './api';
 import { setTokens, clearTokens, getToken } from './auth';
 
 type Screen = 'login' | 'register' | 'dashboard';
@@ -17,6 +17,7 @@ export default function DashboardPage() {
   const [isTopUpLoading, setIsTopUpLoading] = useState(false);
   const [customAmount, setCustomAmount] = useState(false);
   const [customValue, setCustomValue] = useState('');
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
   // Форма логина
   const [email, setEmail] = useState('');
@@ -105,6 +106,25 @@ export default function DashboardPage() {
       alert(error?.message || 'Ошибка создания платежа');
     } finally {
       setIsTopUpLoading(false);
+    }
+  };
+
+  const handlePurchase = async (plan: string, price: number) => {
+    if (balance < price) {
+      alert(`Недостаточно средств. Нужно ${price}₽, доступно ${balance.toFixed(2)}₽`);
+      return;
+    }
+    if (!confirm(`Купить подписку за ${price}₽?`)) return;
+
+    setIsPurchasing(true);
+    try {
+      const res = await subscriptionApi.purchase(plan);
+      alert(res.data.message);
+      await loadDashboardData();
+    } catch (e: any) {
+      alert(e?.message || 'Ошибка покупки');
+    } finally {
+      setIsPurchasing(false);
     }
   };
 
@@ -544,81 +564,55 @@ export default function DashboardPage() {
           </div>
 
           {/* Pictures */}
-          <div
-            style={{
-              backgroundColor: '#141414',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #2a2a2a',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '16px' }}>🎨</span>
-              <p style={{ fontSize: '13px', color: '#a1a1aa' }}>Velium Pictures</p>
-            </div>
-            <p style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', marginBottom: '4px' }}>
-              {isPremium ? 'VIP' : 'Free'}
-            </p>
-            <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '8px' }}>
-              {isPremium
-                ? `${user?.premiumCredits || 0} Premium генераций осталось`
-                : `${user?.generationsToday || 0}/5 генераций сегодня`}
-            </p>
-            <div style={{ marginBottom: '16px' }}>
-              <p style={{ fontSize: '13px', color: '#52525b', marginBottom: '4px' }}>
-                💎 VIP подписка:
-              </p>
-              <p style={{ fontSize: '13px', color: '#a78bfa' }}>299₽/мес · 1 990₽/год</p>
-              <p style={{ fontSize: '12px', color: '#52525b', marginTop: '4px' }}>
-                +5₽ за доп. Premium генерацию
+          {!isPremium ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button
+                onClick={() => handlePurchase('pictures_vip_month', 299)}
+                disabled={isPurchasing}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                  color: 'white',
+                  padding: '10px',
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: isPurchasing ? 'not-allowed' : 'pointer',
+                  opacity: isPurchasing ? 0.7 : 1,
+                }}
+              >
+                ⭐ VIP — 299₽ (50 генераций)
+              </button>
+              <p style={{ fontSize: '11px', color: '#52525b', textAlign: 'center' }}>
+                Доп. генерации — 5₽/шт с баланса
               </p>
             </div>
-            <a
-              href="/services/pictures"
+          ) : (
+            <div
               style={{
-                display: 'block',
-                textAlign: 'center',
-                backgroundColor: 'rgba(124,58,237,0.15)',
-                color: '#a78bfa',
-                padding: '10px',
+                backgroundColor: 'rgba(34,197,94,0.1)',
                 borderRadius: '10px',
-                fontSize: '13px',
-                fontWeight: 600,
-                border: '1px solid rgba(124,58,237,0.3)',
-                textDecoration: 'none',
+                padding: '10px',
+                textAlign: 'center',
               }}
             >
-              Подробнее →
-            </a>
-          </div>
-
-          {/* VPN */}
-          <div
-            style={{
-              backgroundColor: '#141414',
-              borderRadius: '16px',
-              padding: '24px',
-              border: '1px solid #2a2a2a',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '16px' }}>🛡️</span>
-              <p style={{ fontSize: '13px', color: '#a1a1aa' }}>Velium VPN</p>
-            </div>
-            <p style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', marginBottom: '4px' }}>
-              Не подключён
-            </p>
-            <div style={{ marginBottom: '16px' }}>
-              <p style={{ fontSize: '13px', color: '#52525b', marginBottom: '4px' }}>📋 Тарифы:</p>
-              <p style={{ fontSize: '13px', color: '#38bdf8' }}>219₽/мес · 1 890₽/год</p>
-              <p style={{ fontSize: '12px', color: '#22c55e', marginTop: '4px' }}>
-                🎁 5 дней бесплатно
+              <p style={{ color: '#22c55e', fontSize: '13px', fontWeight: 600 }}>✅ VIP активен</p>
+              <p style={{ color: '#52525b', fontSize: '12px' }}>
+                {user?.premiumCredits || 0} генераций осталось
               </p>
             </div>
-            <a
-              href="/services/vpn"
+          )}
+
+          {/* VPN */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button
+              onClick={() => handlePurchase('vpn_month', 219)}
+              disabled={isPurchasing}
               style={{
-                display: 'block',
+                width: '100%',
                 textAlign: 'center',
                 backgroundColor: 'rgba(14,165,233,0.15)',
                 color: '#38bdf8',
@@ -627,11 +621,29 @@ export default function DashboardPage() {
                 fontSize: '13px',
                 fontWeight: 600,
                 border: '1px solid rgba(14,165,233,0.3)',
-                textDecoration: 'none',
+                cursor: isPurchasing ? 'not-allowed' : 'pointer',
               }}
             >
-              Подключить →
-            </a>
+              🛡️ 219₽/мес
+            </button>
+            <button
+              onClick={() => handlePurchase('vpn_year', 1890)}
+              disabled={isPurchasing}
+              style={{
+                width: '100%',
+                textAlign: 'center',
+                backgroundColor: 'rgba(14,165,233,0.1)',
+                color: '#38bdf8',
+                padding: '10px',
+                borderRadius: '10px',
+                fontSize: '13px',
+                fontWeight: 600,
+                border: '1px solid rgba(14,165,233,0.2)',
+                cursor: isPurchasing ? 'not-allowed' : 'pointer',
+              }}
+            >
+              🛡️ 1890₽/год (экономия 44%)
+            </button>
           </div>
 
           {/* Профиль */}
