@@ -24,6 +24,7 @@ model User {
   refreshTokens      RefreshToken[]
   balance            Balance?
   transactions       Transaction[]
+  vpnKeys            VpnUserKey?
 
   @@map("users")
 }
@@ -158,4 +159,32 @@ enum PaymentStatus {
   SUCCEEDED
   FAILED
   CANCELLED
+}
+// ─── VPN ─────────────────────────────────────────────────────────
+model VpnServer {
+  id         String   @id
+  name       String
+  country    String
+  flag       String
+  endpoint   String
+  publicKey  String
+  isPremium  Boolean  @default(false)
+  isActive   Boolean  @default(true)
+  comingSoon Boolean  @default(false)
+
+  userKeys   VpnUserKey[]
+
+  @@map("vpn_servers")
+}
+
+model VpnUserKey {
+  userId     String     @id
+  privateKey String
+  publicKey  String
+  serverId   String?
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  server     VpnServer? @relation(fields: [serverId], references: [id])
+
+  @@map("vpn_user_keys")
 }

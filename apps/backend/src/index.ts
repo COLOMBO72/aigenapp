@@ -7,6 +7,7 @@ import { authRouter } from './modules/auth/auth.router.js';
 import { generateRouter } from './modules/generate/generate.router.js';
 import { balanceRouter } from './modules/balance/balance.router.js';
 import { paymentRouter } from './modules/payment/payment.router.js';
+import { subscriptionRouter } from './modules/subscription/subscription.router.js';
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/generate', generateRouter);
 app.use('/api/balance', balanceRouter);
 app.use('/api/payment', paymentRouter);
+app.use('/api/subscription', subscriptionRouter);
 
 // ─── Graceful shutdown ─────────────────────────────────────────────
 process.on('SIGTERM', async () => {
