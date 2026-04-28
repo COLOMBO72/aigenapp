@@ -644,6 +644,23 @@ export default function DashboardPage() {
             >
               🛡️ 1890₽/год (экономия 44%)
             </button>
+            <button
+              onClick={() => (window.location.href = '/dashboard/vpn')}
+              style={{
+                width: '100%',
+                textAlign: 'center',
+                backgroundColor: 'rgba(14,165,233,0.15)',
+                color: '#38bdf8',
+                padding: '12px',
+                borderRadius: '10px',
+                fontSize: '14px',
+                fontWeight: 600,
+                border: '1px solid rgba(14,165,233,0.3)',
+                cursor: 'pointer',
+              }}
+            >
+              🛡️ Управлять VPN устройствами
+            </button>
           </div>
 
           {/* Профиль */}

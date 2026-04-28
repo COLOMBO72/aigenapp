@@ -1,11 +1,12 @@
 {
   "expo": {
-    "name": "AI Image App",
-    "slug": "ai-image-app",
+    "name": "Velium Pictures",
+    "slug": "velium-pictures",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+    "scheme": "velium-pictures",
+    "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -13,15 +14,27 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.yourname.aiimageapp"
+      "bundleIdentifier": "com.velium.pictures"
     },
     "android": {
-      "package": "com.yourname.aiimageapp"
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#0a0a0a"
+      },
+      "package": "com.velium.pictures",
+      "versionCode": 1,
+      "permissions": [],
+      "privacyPolicyUrl": "https://aigenapp-backend.vercel.app/legal/privacy"
     },
-    "scheme": "ai-image-app",
     "plugins": [
       "expo-router",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0f5d3102-364a-49b4-be57-002ba0dc4b21"
+      }
+    }
   }
 }
