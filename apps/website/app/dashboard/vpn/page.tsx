@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { getToken } from '../auth';
 import QRCode from 'qrcode';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const VPN_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://94.241.174.77:3000';
 
 async function vpnApi(endpoint: string, options: RequestInit = {}) {
   const token = getToken();
-  const res = await fetch(`${API_URL}/api/vpn${endpoint}`, {
+  const res = await fetch(`${VPN_API_URL}/api/vpn${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
