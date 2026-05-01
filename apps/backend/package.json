@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@a2seven/yoo-checkout": "^1.1.4",
-    "@ai-image-app/shared": "workspace:*",
     "@aws-sdk/client-s3": "^3.1014.0",
     "@aws-sdk/lib-storage": "^3.1014.0",
     "@fal-ai/client": "^1.9.5",

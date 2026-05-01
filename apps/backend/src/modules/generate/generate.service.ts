@@ -3,7 +3,7 @@ import { prisma } from '../../lib/prisma.js';
 import { redisConnection } from '../../lib/redis.js';
 import { GenerateRequest, GenerateJobData } from './generate.types.js';
 import { JwtPayload } from '../../utils/jwt.js';
-import { PLAN_LIMITS, PRICES } from '@ai-image-app/shared';
+import { PLAN_LIMITS, PRICES } from '../../shared/index.js';
 
 export const generateQueue = new Queue('image-generation', {
   connection: redisConnection,
@@ -18,9 +18,8 @@ export const generateQueue = new Queue('image-generation', {
 
 export async function createGeneration(
   user: JwtPayload,
-  data: GenerateRequest
+  data: GenerateRequest,
 ): Promise<{ generationId: string }> {
-
   const dbUser = await prisma.user.findUnique({
     where: { id: user.userId },
     include: { balance: true },
@@ -64,9 +63,7 @@ export async function createGeneration(
       const balance = dbUser.balance?.amount || 0;
 
       if (balance < price) {
-        throw new Error(
-          `Недостаточно средств на балансе. Нужно ${price}₽, доступно ${balance}₽`
-        );
+        throw new Error(`Недостаточно средств на балансе. Нужно ${price}₽, доступно ${balance}₽`);
       }
 
       await prisma.balance.update({
@@ -89,9 +86,7 @@ export async function createGeneration(
     const limit = PLAN_LIMITS[dbUser.plan === 'FREE' ? 'free' : 'premium'].generationsPerDay;
 
     if (limit !== Infinity && dbUser.generationsToday >= limit) {
-      throw new Error(
-        `Достигнут дневной лимит. Free тариф: ${limit} генераций в день.`
-      );
+      throw new Error(`Достигнут дневной лимит. Free тариф: ${limit} генераций в день.`);
     }
 
     await prisma.user.update({
@@ -118,14 +113,18 @@ export async function createGeneration(
   });
 
   // ─── Добавляем в очередь ──────────────────────────────────────
-  await generateQueue.add('generate', {
-    generationId: generation.id,
-    userId: dbUser.id,
-    prompt: data.prompt,
-    width,
-    height,
-    isPremium: isPremiumRequest,
-  }, { jobId: generation.id });
+  await generateQueue.add(
+    'generate',
+    {
+      generationId: generation.id,
+      userId: dbUser.id,
+      prompt: data.prompt,
+      width,
+      height,
+      isPremium: isPremiumRequest,
+    },
+    { jobId: generation.id },
+  );
 
   return { generationId: generation.id };
 }
