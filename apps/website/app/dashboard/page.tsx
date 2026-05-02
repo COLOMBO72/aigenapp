@@ -595,71 +595,45 @@ export default function DashboardPage() {
               style={{
                 backgroundColor: 'rgba(34,197,94,0.1)',
                 borderRadius: '10px',
-                padding: '10px',
+                padding: '16px',
                 textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
               }}
             >
-              <p style={{ color: '#22c55e', fontSize: '13px', fontWeight: 600 }}>✅ VIP активен</p>
-              <p style={{ color: '#52525b', fontSize: '12px' }}>
+              <p style={{ color: '#22c55e', fontSize: '16px', fontWeight: 700 }}>✅ VIP активен</p>
+              <p style={{ color: '#a1a1aa', fontSize: '13px' }}>
                 {user?.premiumCredits || 0} генераций осталось
               </p>
+              {user?.subscription?.expiresAt && (
+                <p style={{ color: '#52525b', fontSize: '12px' }}>
+                  до {new Date(user.subscription.expiresAt).toLocaleDateString('ru-RU')}
+                </p>
+              )}
             </div>
           )}
 
           {/* VPN */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <button
-              onClick={() => handlePurchase('vpn_month', 219)}
-              disabled={isPurchasing}
-              style={{
-                width: '100%',
-                textAlign: 'center',
-                backgroundColor: 'rgba(14,165,233,0.15)',
-                color: '#38bdf8',
-                padding: '10px',
-                borderRadius: '10px',
-                fontSize: '13px',
-                fontWeight: 600,
-                border: '1px solid rgba(14,165,233,0.3)',
-                cursor: isPurchasing ? 'not-allowed' : 'pointer',
-              }}
-            >
-              🛡️ 219₽/мес
-            </button>
-            <button
-              onClick={() => handlePurchase('vpn_year', 1890)}
-              disabled={isPurchasing}
-              style={{
-                width: '100%',
-                textAlign: 'center',
-                backgroundColor: 'rgba(14,165,233,0.1)',
-                color: '#38bdf8',
-                padding: '10px',
-                borderRadius: '10px',
-                fontSize: '13px',
-                fontWeight: 600,
-                border: '1px solid rgba(14,165,233,0.2)',
-                cursor: isPurchasing ? 'not-allowed' : 'pointer',
-              }}
-            >
-              🛡️ 1890₽/год (экономия 44%)
-            </button>
-            <button
               onClick={() => (window.location.href = '/dashboard/vpn')}
               style={{
                 width: '100%',
                 textAlign: 'center',
-                backgroundColor: 'rgba(14,165,233,0.15)',
-                color: '#38bdf8',
-                padding: '12px',
+                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                color: 'white',
+                padding: '14px',
                 borderRadius: '10px',
-                fontSize: '14px',
-                fontWeight: 600,
-                border: '1px solid rgba(14,165,233,0.3)',
+                fontSize: '15px',
+                fontWeight: 700,
+                border: 'none',
                 cursor: 'pointer',
               }}
             >
-              🛡️ Управлять VPN устройствами
+              🛡️ Управлять VPN устройствами →
             </button>
           </div>
 
@@ -698,6 +672,105 @@ export default function DashboardPage() {
             >
               Выйти
             </button>
+          </div>
+        </div>
+
+        {/* Мои подписки */}
+        <div
+          style={{
+            backgroundColor: '#141414',
+            borderRadius: '16px',
+            padding: '28px',
+            border: '1px solid #2a2a2a',
+            marginBottom: '24px',
+          }}
+        >
+          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', marginBottom: '20px' }}>
+            Мои подписки
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {user?.subscription ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '16px',
+                  backgroundColor: '#0a0a0a',
+                  borderRadius: '12px',
+                  border: '1px solid #2a2a2a',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '24px' }}>🎨</span>
+                  <div>
+                    <p style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>
+                      Velium Pictures VIP
+                    </p>
+                    <p style={{ fontSize: '13px', color: '#a1a1aa' }}>
+                      Действует до{' '}
+                      {new Date(user.subscription.expiresAt).toLocaleDateString('ru-RU')}
+                    </p>
+                  </div>
+                </div>
+                <span
+                  style={{
+                    backgroundColor: 'rgba(34,197,94,0.15)',
+                    color: '#22c55e',
+                    padding: '4px 12px',
+                    borderRadius: '100px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
+                  Активна
+                </span>
+              </div>
+            ) : null}
+
+            {/* VPN устройства */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px',
+                backgroundColor: '#0a0a0a',
+                borderRadius: '12px',
+                border: '1px solid #2a2a2a',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '24px' }}>🛡️</span>
+                <div>
+                  <p style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>Velium VPN</p>
+                  <p style={{ fontSize: '13px', color: '#a1a1aa' }}>
+                    Управляй устройствами на странице VPN
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => (window.location.href = '/dashboard/vpn')}
+                style={{
+                  backgroundColor: 'rgba(14,165,233,0.15)',
+                  color: '#38bdf8',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  border: '1px solid rgba(14,165,233,0.3)',
+                  cursor: 'pointer',
+                }}
+              >
+                Открыть →
+              </button>
+            </div>
+
+            {!user?.subscription && (
+              <div style={{ textAlign: 'center', padding: '16px' }}>
+                <p style={{ fontSize: '14px', color: '#52525b' }}>Нет активных подписок Pictures</p>
+              </div>
+            )}
           </div>
         </div>
 
