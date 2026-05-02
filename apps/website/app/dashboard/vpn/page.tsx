@@ -87,21 +87,28 @@ export default function VpnPage() {
     }
   };
 
-  const subscribe = async (deviceId: string, plan: string, billingType: string) => {
-    setSubscribing(deviceId);
-    try {
-      const data = await vpnApi(`/devices/${deviceId}/subscribe`, {
-        method: 'POST',
-        body: JSON.stringify({ plan, billingType }),
-      });
-      alert(data.message);
-      await loadDevices();
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setSubscribing(null);
-    }
-  };
+const subscribe = async (deviceId: string, plan: string, billingType: string) => {
+  setSubscribing(deviceId);
+  try {
+    const token = getToken();
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscription/vpn-device`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ deviceId, plan, billingType }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Ошибка');
+    alert(data.data.message);
+    await loadDevices();
+  } catch (e: any) {
+    alert(e.message);
+  } finally {
+    setSubscribing(null);
+  }
+};
 
   const getStatus = (device: any) => {
     const now = new Date();

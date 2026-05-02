@@ -10,6 +10,10 @@ const PRICES = {
   pictures_vip_month: 299,
   vpn_month: 219,
   vpn_year: 1890,
+  vpn_basic_month: 100,
+  vpn_basic_year: 960,
+  vpn_standard_month: 180,
+  vpn_standard_year: 1728,
 };
 
 const PREMIUM_CREDITS = 50;
@@ -103,7 +107,73 @@ subscriptionRouter.post('/purchase', async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: 'Ошибка активации подписки' });
   }
 });
+// ─── POST /api/subscription/vpn-device ────────────────────────
+subscriptionRouter.post('/vpn-device', async (req: Request, res: Response) => {
+  try {
+    const { deviceId, plan, billingType } = req.body;
+    const userId = req.user!.userId;
 
+    const planKey =
+      `vpn_${plan}_${billingType === 'yearly' ? 'year' : 'month'}` as keyof typeof PRICES;
+    const price = PRICES[planKey];
+
+    if (!price) {
+      res.status(400).json({ success: false, error: 'Неверный тариф' });
+      return;
+    }
+
+    // Проверяем баланс
+    const balance = await prisma.balance.findUnique({ where: { userId } });
+    if (!balance || balance.amount < price) {
+      res.status(400).json({
+        success: false,
+        error: `Недостаточно средств. Нужно ${price}₽, доступно ${balance?.amount || 0}₽`,
+      });
+      return;
+    }
+
+    // Списываем баланс
+    await prisma.balance.update({
+      where: { userId },
+      data: { amount: { decrement: price } },
+    });
+
+    // Записываем транзакцию
+    const months = billingType === 'yearly' ? 12 : 1;
+    await prisma.transaction.create({
+      data: {
+        userId,
+        type: 'SUBSCRIPTION',
+        amount: price,
+        description: `VPN ${plan} на ${months === 12 ? 'год' : 'месяц'} (устройство ${deviceId})`,
+        status: 'SUCCEEDED',
+      },
+    });
+
+    // Активируем подписку на устройстве через VPN сервер
+    const vpnRes = await fetch(`http://localhost:3000/api/vpn/devices/${deviceId}/activate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan, billingType, userId }),
+    });
+
+    const vpnData = (await vpnRes.json()) as { error?: string; subscriptionEndsAt?: string };
+    if (!vpnRes.ok) {
+      throw new Error(vpnData.error || 'Ошибка активации VPN');
+    }
+
+    res.json({
+      success: true,
+      data: {
+        message: `VPN ${plan} активирован`,
+        subscriptionEndsAt: vpnData.subscriptionEndsAt,
+      },
+    });
+  } catch (error) {
+    console.error('VPN subscription error:', error);
+    res.status(500).json({ success: false, error: 'Ошибка активации подписки' });
+  }
+});
 // ─── GET /api/subscription/status ─────────────────────────────
 subscriptionRouter.get('/status', async (req: Request, res: Response) => {
   try {
