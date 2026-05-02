@@ -96,6 +96,7 @@ export default function VpnPage() {
 
   const subscribe = async (deviceId: string, plan: string, billingType: string) => {
     setSubscribing(deviceId);
+
     try {
       const token = getToken();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscription/vpn-device`, {
@@ -108,7 +109,13 @@ export default function VpnPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Ошибка');
-      alert(data.data.message);
+      if (plan === 'standard') {
+        alert(
+          `${data.data.message}\n\n⚠️ Пересканируй QR код — обнови страницу, нажми "Показать QR код" и обнови туннель в WireGuard`,
+        );
+      } else {
+        alert(data.data.message);
+      }
       await loadDevices();
     } catch (e: any) {
       alert(e.message);
