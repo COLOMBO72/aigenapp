@@ -129,8 +129,6 @@ export default function VpnPage() {
       await loadDevices();
     } catch (e: any) {
       if (e.message.includes('Недостаточно средств')) {
-        alert(e.message);
-        // Считаем сколько не хватает
         const needed =
           plan === 'standard'
             ? billingType === 'yearly'
@@ -139,39 +137,23 @@ export default function VpnPage() {
             : billingType === 'yearly'
               ? 960
               : 100;
-        const topUpUrl = `${window.location.origin}/dashboard?topup=${needed}`;
-        if (confirm(`Перейти к пополнению баланса на ${needed}₽?`)) {
-          window.location.href = '/dashboard';
+        const diff = Math.ceil(needed - balance);
+        alert(e.message);
+        if (confirm(`Пополнить баланс на ${diff < 50 ? 50 : diff}₽?`)) {
+          const token = getToken();
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ amount: diff < 50 ? 50 : diff }),
+          });
+          const data = await res.json();
+          if (data.data?.confirmationUrl) window.location.href = data.data.confirmationUrl;
         }
       } else {
         alert(e.message);
       }
-    } finally {
-      setSubscribing(null);
     }
   };
-
-  // } catch (e: any) {
-  //   if (e.message.includes('Недостаточно средств')) {
-  //     const needed = plan === 'standard'
-  //       ? billingType === 'yearly' ? 1728 : 180
-  //       : billingType === 'yearly' ? 960 : 100;
-  //     const diff = Math.ceil(needed - balance);
-  //     alert(e.message);
-  //     if (confirm(`Пополнить баланс на ${diff < 50 ? 50 : diff}₽?`)) {
-  //       const token = getToken();
-  //       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/create`, {
-  //         method: 'POST',
-  //         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-  //         body: JSON.stringify({ amount: diff < 50 ? 50 : diff }),
-  //       });
-  //       const data = await res.json();
-  //       if (data.data?.confirmationUrl) window.location.href = data.data.confirmationUrl;
-  //     }
-  //   } else {
-  //     alert(e.message);
-  //   }
-  // }
 
   const getStatus = (device: any) => {
     const now = new Date();
@@ -489,25 +471,25 @@ export default function VpnPage() {
                         {
                           plan: 'basic',
                           billing: 'monthly',
-                          label: 'Basic 10Mbps',
+                          label: 'Basic',
                           price: '100₽/мес',
                         },
                         {
                           plan: 'basic',
                           billing: 'yearly',
-                          label: 'Basic 10Mbps',
+                          label: 'Basic YEAR',
                           price: '960₽/год',
                         },
                         {
                           plan: 'standard',
                           billing: 'monthly',
-                          label: 'Standard 20Mbps',
+                          label: 'Standard',
                           price: '180₽/мес',
                         },
                         {
                           plan: 'standard',
                           billing: 'yearly',
-                          label: 'Standard 20Mbps',
+                          label: 'Standard YEAR',
                           price: '1728₽/год',
                         },
                       ].map((opt) => (
