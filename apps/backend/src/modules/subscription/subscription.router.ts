@@ -1,8 +1,11 @@
+import { Client } from 'pg';
 import { Router, Request, Response, IRouter } from 'express';
 import { authMiddleware } from '../../middleware/auth.js';
 import { prisma } from '../../lib/prisma.js';
 
 export const subscriptionRouter: IRouter = Router();
+const pgClient = new Client({ connectionString: process.env.DATABASE_URL });
+pgClient.connect();
 
 subscriptionRouter.use(authMiddleware);
 
@@ -112,6 +115,15 @@ subscriptionRouter.post('/vpn-device', async (req: Request, res: Response) => {
   try {
     const { deviceId, plan, billingType } = req.body;
     const userId = req.user!.userId;
+    const deviceCheck = await pgClient.query(
+      'SELECT "subscriptionEndsAt" FROM vpn_devices WHERE id = $1 AND "userId" = $2',
+      [deviceId, userId],
+    );
+    const device = deviceCheck.rows[0];
+    if (device?.subscriptionEndsAt && new Date(device.subscriptionEndsAt) > new Date()) {
+      res.status(400).json({ success: false, error: 'Подписка уже активна' });
+      return;
+    }
 
     const planKey =
       `vpn_${plan}_${billingType === 'yearly' ? 'year' : 'month'}` as keyof typeof PRICES;

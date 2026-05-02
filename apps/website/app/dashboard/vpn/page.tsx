@@ -23,6 +23,7 @@ async function vpnApi(endpoint: string, options: RequestInit = {}) {
 
 export default function VpnPage() {
   const [devices, setDevices] = useState<any[]>([]);
+  const [balance, setBalance] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [addingDevice, setAddingDevice] = useState(false);
   const [deviceName, setDeviceName] = useState('');
@@ -38,6 +39,12 @@ export default function VpnPage() {
     try {
       const data = await vpnApi('/devices');
       setDevices(data.devices);
+      const balRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/balance`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+        .then((r) => r.json())
+        .catch(() => ({ data: { amount: 0 } }));
+      setBalance(balRes.data?.amount || 0);
     } catch (e) {
       console.error(e);
     } finally {
@@ -87,28 +94,28 @@ export default function VpnPage() {
     }
   };
 
-const subscribe = async (deviceId: string, plan: string, billingType: string) => {
-  setSubscribing(deviceId);
-  try {
-    const token = getToken();
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscription/vpn-device`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ deviceId, plan, billingType }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Ошибка');
-    alert(data.data.message);
-    await loadDevices();
-  } catch (e: any) {
-    alert(e.message);
-  } finally {
-    setSubscribing(null);
-  }
-};
+  const subscribe = async (deviceId: string, plan: string, billingType: string) => {
+    setSubscribing(deviceId);
+    try {
+      const token = getToken();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscription/vpn-device`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ deviceId, plan, billingType }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Ошибка');
+      alert(data.data.message);
+      await loadDevices();
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setSubscribing(null);
+    }
+  };
 
   const getStatus = (device: any) => {
     const now = new Date();
@@ -167,7 +174,23 @@ const subscribe = async (deviceId: string, plan: string, billingType: string) =>
           </h1>
           <p style={{ color: '#a1a1aa', fontSize: '15px' }}>Управляй своими VPN устройствами</p>
         </div>
-
+        <div
+          style={{
+            backgroundColor: '#141414',
+            borderRadius: '12px',
+            padding: '16px 20px',
+            border: '1px solid #2a2a2a',
+            marginBottom: '24px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ color: '#a1a1aa', fontSize: '14px' }}>Баланс</span>
+          <span style={{ color: '#ffffff', fontSize: '18px', fontWeight: 700 }}>
+            {balance.toFixed(2)}₽
+          </span>
+        </div>
         {/* Инструкция */}
         <div
           style={{
@@ -387,7 +410,7 @@ const subscribe = async (deviceId: string, plan: string, billingType: string) =>
                   )}
 
                   {/* Тарифы если нет подписки */}
-                  {!status.active && (
+                  {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                       {[
                         {
@@ -436,7 +459,7 @@ const subscribe = async (deviceId: string, plan: string, billingType: string) =>
                         </button>
                       ))}
                     </div>
-                  )}
+                  }
                 </div>
               );
             })}
