@@ -25,6 +25,7 @@ export default function VpnPage() {
   const [devices, setDevices] = useState<any[]>([]);
   const [balance, setBalance] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [configTexts, setConfigTexts] = useState<Record<string, string>>({});
   const [addingDevice, setAddingDevice] = useState(false);
   const [deviceName, setDeviceName] = useState('');
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
@@ -78,10 +79,20 @@ export default function VpnPage() {
       const data = await vpnApi(`/devices/${deviceId}/qr`);
       const qr = await QRCode.toDataURL(data.config, { width: 300, margin: 2 });
       setQrCodes((prev) => ({ ...prev, [deviceId]: qr }));
+      setConfigTexts((prev) => ({ ...prev, [deviceId]: data.config })); // сохраняем конфиг
       setShowQr(deviceId);
     } catch (e: any) {
       alert(e.message);
     }
+  };
+  const downloadConfig = (config: string, deviceName: string) => {
+    const blob = new Blob([config], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `velium-${deviceName}.conf`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const deleteDevice = async (deviceId: string) => {
@@ -96,7 +107,6 @@ export default function VpnPage() {
 
   const subscribe = async (deviceId: string, plan: string, billingType: string) => {
     setSubscribing(deviceId);
-
     try {
       const token = getToken();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscription/vpn-device`, {
@@ -118,11 +128,50 @@ export default function VpnPage() {
       }
       await loadDevices();
     } catch (e: any) {
-      alert(e.message);
+      if (e.message.includes('Недостаточно средств')) {
+        alert(e.message);
+        // Считаем сколько не хватает
+        const needed =
+          plan === 'standard'
+            ? billingType === 'yearly'
+              ? 1728
+              : 180
+            : billingType === 'yearly'
+              ? 960
+              : 100;
+        const topUpUrl = `${window.location.origin}/dashboard?topup=${needed}`;
+        if (confirm(`Перейти к пополнению баланса на ${needed}₽?`)) {
+          window.location.href = '/dashboard';
+        }
+      } else {
+        alert(e.message);
+      }
     } finally {
       setSubscribing(null);
     }
   };
+
+  // } catch (e: any) {
+  //   if (e.message.includes('Недостаточно средств')) {
+  //     const needed = plan === 'standard'
+  //       ? billingType === 'yearly' ? 1728 : 180
+  //       : billingType === 'yearly' ? 960 : 100;
+  //     const diff = Math.ceil(needed - balance);
+  //     alert(e.message);
+  //     if (confirm(`Пополнить баланс на ${diff < 50 ? 50 : diff}₽?`)) {
+  //       const token = getToken();
+  //       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/create`, {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+  //         body: JSON.stringify({ amount: diff < 50 ? 50 : diff }),
+  //       });
+  //       const data = await res.json();
+  //       if (data.data?.confirmationUrl) window.location.href = data.data.confirmationUrl;
+  //     }
+  //   } else {
+  //     alert(e.message);
+  //   }
+  // }
 
   const getStatus = (device: any) => {
     const now = new Date();
@@ -398,12 +447,29 @@ export default function VpnPage() {
                         style={{ width: '250px', height: '250px' }}
                       />
                       <p style={{ color: '#0a0a0a', fontSize: '13px', marginTop: '8px' }}>
-                        Отсканируй в приложении WireGuard
+                        Отсканируй в WireGuard
                       </p>
+                      <button
+                        onClick={() => downloadConfig(configTexts[device.id], device.name)}
+                        style={{
+                          marginTop: '8px',
+                          backgroundColor: '#7c3aed',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '8px 16px',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                        }}
+                      >
+                        📥 Скачать .conf файл
+                      </button>
                       <button
                         onClick={() => setShowQr(null)}
                         style={{
                           marginTop: '8px',
+                          marginLeft: '8px',
                           backgroundColor: 'transparent',
                           border: 'none',
                           color: '#7c3aed',

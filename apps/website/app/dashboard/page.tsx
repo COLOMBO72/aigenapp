@@ -29,6 +29,14 @@ export default function DashboardPage() {
   useEffect(() => {
     checkAuth();
   }, []);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const topup = params.get('topup');
+    if (topup) {
+      setTopUpAmount(parseInt(topup));
+      setCustomAmount(false);
+    }
+  }, []);
 
   const checkAuth = async () => {
     const token = getToken();
@@ -51,20 +59,22 @@ export default function DashboardPage() {
   };
 
   const loadDashboardData = async () => {
-  try {
-    const token = getToken();
-    const [balanceRes, txRes, vpnRes] = await Promise.all([
-      balanceApi.get(),
-      balanceApi.transactions(),
-      fetch(`${process.env.NEXT_PUBLIC_VPN_API_URL}/api/vpn/devices`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(r => r.json()).catch(() => ({ devices: [] }))
-    ]);
-    setBalance(balanceRes.data.amount);
-    setTransactions(txRes.data);
-    setVpnDevices(vpnRes.devices || []);
-  } catch {}
-};
+    try {
+      const token = getToken();
+      const [balanceRes, txRes, vpnRes] = await Promise.all([
+        balanceApi.get(),
+        balanceApi.transactions(),
+        fetch(`${process.env.NEXT_PUBLIC_VPN_API_URL}/api/vpn/devices`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => r.json())
+          .catch(() => ({ devices: [] })),
+      ]);
+      setBalance(balanceRes.data.amount);
+      setTransactions(txRes.data);
+      setVpnDevices(vpnRes.devices || []);
+    } catch {}
+  };
 
   const handleLogin = async () => {
     if (!email || !password) return;
@@ -738,51 +748,97 @@ export default function DashboardPage() {
             ) : null}
 
             {/* VPN устройства */}
-            {vpnDevices.length > 0 ? vpnDevices.map((device: any) => {
-  const now = new Date();
-  const isSubActive = device.subscriptionEndsAt && new Date(device.subscriptionEndsAt) > now;
-  const isTrialActive = device.trialEndsAt && new Date(device.trialEndsAt) > now;
-  const statusText = isSubActive
-    ? `${device.plan === 'basic' ? 'Basic 10Mbps' : 'Standard 20Mbps'} до ${new Date(device.subscriptionEndsAt).toLocaleDateString('ru-RU')}`
-    : isTrialActive
-    ? `Trial до ${new Date(device.trialEndsAt).toLocaleDateString('ru-RU')}`
-    : 'Подписка истекла';
-  const statusColor = isSubActive ? '#22c55e' : isTrialActive ? '#f59e0b' : '#ef4444';
+            {vpnDevices.length > 0 ? (
+              vpnDevices.map((device: any) => {
+                const now = new Date();
+                const isSubActive =
+                  device.subscriptionEndsAt && new Date(device.subscriptionEndsAt) > now;
+                const isTrialActive = device.trialEndsAt && new Date(device.trialEndsAt) > now;
+                const statusText = isSubActive
+                  ? `${device.plan === 'basic' ? 'Basic 10Mbps' : 'Standard 20Mbps'} до ${new Date(device.subscriptionEndsAt).toLocaleDateString('ru-RU')}`
+                  : isTrialActive
+                    ? `Trial до ${new Date(device.trialEndsAt).toLocaleDateString('ru-RU')}`
+                    : 'Подписка истекла';
+                const statusColor = isSubActive ? '#22c55e' : isTrialActive ? '#f59e0b' : '#ef4444';
 
-  return (
-    <div key={device.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', backgroundColor: '#0a0a0a', borderRadius: '12px', border: '1px solid #2a2a2a' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span style={{ fontSize: '24px' }}>🛡️</span>
-        <div>
-          <p style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>📱 {device.name}</p>
-          <p style={{ fontSize: '13px', color: statusColor }}>{statusText}</p>
-        </div>
-      </div>
-      <button
-        onClick={() => window.location.href = '/dashboard/vpn'}
-        style={{ backgroundColor: 'rgba(14,165,233,0.15)', color: '#38bdf8', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, border: '1px solid rgba(14,165,233,0.3)', cursor: 'pointer' }}
-      >
-        Управлять →
-      </button>
-    </div>
-  );
-}) : (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', backgroundColor: '#0a0a0a', borderRadius: '12px', border: '1px solid #2a2a2a' }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-      <span style={{ fontSize: '24px' }}>🛡️</span>
-      <div>
-        <p style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>Velium VPN</p>
-        <p style={{ fontSize: '13px', color: '#a1a1aa' }}>Нет устройств</p>
-      </div>
-    </div>
-    <button
-      onClick={() => window.location.href = '/dashboard/vpn'}
-      style={{ backgroundColor: 'rgba(14,165,233,0.15)', color: '#38bdf8', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, border: '1px solid rgba(14,165,233,0.3)', cursor: 'pointer' }}
-    >
-      Добавить →
-    </button>
-  </div>
-)}
+                return (
+                  <div
+                    key={device.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '16px',
+                      backgroundColor: '#0a0a0a',
+                      borderRadius: '12px',
+                      border: '1px solid #2a2a2a',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontSize: '24px' }}>🛡️</span>
+                      <div>
+                        <p style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>
+                          📱 {device.name}
+                        </p>
+                        <p style={{ fontSize: '13px', color: statusColor }}>{statusText}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => (window.location.href = '/dashboard/vpn')}
+                      style={{
+                        backgroundColor: 'rgba(14,165,233,0.15)',
+                        color: '#38bdf8',
+                        padding: '6px 14px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        border: '1px solid rgba(14,165,233,0.3)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Управлять →
+                    </button>
+                  </div>
+                );
+              })
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '16px',
+                  backgroundColor: '#0a0a0a',
+                  borderRadius: '12px',
+                  border: '1px solid #2a2a2a',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '24px' }}>🛡️</span>
+                  <div>
+                    <p style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>
+                      Velium VPN
+                    </p>
+                    <p style={{ fontSize: '13px', color: '#a1a1aa' }}>Нет устройств</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => (window.location.href = '/dashboard/vpn')}
+                  style={{
+                    backgroundColor: 'rgba(14,165,233,0.15)',
+                    color: '#38bdf8',
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    border: '1px solid rgba(14,165,233,0.3)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Добавить →
+                </button>
+              </div>
+            )}
 
             {!user?.subscription && (
               <div style={{ textAlign: 'center', padding: '16px' }}>
