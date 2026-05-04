@@ -583,7 +583,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Pictures */}
-          {!isPremium ? (
+          {/* {!isPremium ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
                 onClick={() => handlePurchase('pictures_vip_month', 299)}
@@ -633,7 +633,7 @@ export default function DashboardPage() {
                 </p>
               )}
             </div>
-          )}
+          )} */}
 
           {/* VPN */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -755,7 +755,7 @@ export default function DashboardPage() {
                   device.subscriptionEndsAt && new Date(device.subscriptionEndsAt) > now;
                 const isTrialActive = device.trialEndsAt && new Date(device.trialEndsAt) > now;
                 const statusText = isSubActive
-                  ? `${device.plan === 'basic' ? 'Basic 10Mbps' : 'Standard 20Mbps'} до ${new Date(device.subscriptionEndsAt).toLocaleDateString('ru-RU')}`
+                  ? `${device.plan === 'basic' ? 'Basic' : 'Standard'} до ${new Date(device.subscriptionEndsAt).toLocaleDateString('ru-RU')}`
                   : isTrialActive
                     ? `Trial до ${new Date(device.trialEndsAt).toLocaleDateString('ru-RU')}`
                     : 'Подписка истекла';
@@ -846,71 +846,6 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Мои подписки */}
-        <div
-          style={{
-            backgroundColor: '#141414',
-            borderRadius: '16px',
-            padding: '28px',
-            border: '1px solid #2a2a2a',
-            marginBottom: '24px',
-          }}
-        >
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', marginBottom: '20px' }}>
-            Мои подписки
-          </h2>
-
-          {user?.subscription ? (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '16px',
-                backgroundColor: '#0a0a0a',
-                borderRadius: '12px',
-                border: '1px solid #2a2a2a',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '24px' }}>🎨</span>
-                <div>
-                  <p style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>
-                    Velium Pictures VIP
-                  </p>
-                  <p style={{ fontSize: '13px', color: '#a1a1aa' }}>
-                    Действует до {new Date(user.subscription.expiresAt).toLocaleDateString('ru-RU')}
-                  </p>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span
-                  style={{
-                    backgroundColor: 'rgba(34,197,94,0.15)',
-                    color: '#22c55e',
-                    padding: '4px 12px',
-                    borderRadius: '100px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                  }}
-                >
-                  Активна
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '32px' }}>
-              <p style={{ fontSize: '32px', marginBottom: '12px' }}>📭</p>
-              <p style={{ fontSize: '15px', color: '#a1a1aa', marginBottom: '4px' }}>
-                Нет активных подписок
-              </p>
-              <p style={{ fontSize: '13px', color: '#52525b' }}>
-                Подписки появятся здесь после оплаты
-              </p>
-            </div>
-          )}
         </div>
 
         {/* История транзакций */}
@@ -1012,6 +947,68 @@ export default function DashboardPage() {
               ))}
             </div>
           )}
+        </div>
+        {/* Контакты */}
+        <div
+          style={{
+            backgroundColor: '#141414',
+            borderRadius: '16px',
+            padding: '28px',
+            border: '1px solid #2a2a2a',
+            marginBottom: '24px',
+          }}
+        >
+          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', marginBottom: '20px' }}>
+            📞 Контакты и поддержка
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <a
+              href="https://t.me/velium_group"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '16px',
+                backgroundColor: '#0a0a0a',
+                borderRadius: '12px',
+                border: '1px solid #2a2a2a',
+                textDecoration: 'none',
+              }}
+            >
+              <span style={{ fontSize: '24px' }}>✈️</span>
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>
+                  Telegram канал
+                </p>
+                <p style={{ fontSize: '13px', color: '#a1a1aa' }}>
+                  Новости, обновления и поддержка — @velium_group
+                </p>
+              </div>
+            </a>
+            <a
+              href="mailto:estwoodbizn@gmail.com"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '16px',
+                backgroundColor: '#0a0a0a',
+                borderRadius: '12px',
+                border: '1px solid #2a2a2a',
+                textDecoration: 'none',
+              }}
+            >
+              <span style={{ fontSize: '24px' }}>📧</span>
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>
+                  Email поддержка
+                </p>
+                <p style={{ fontSize: '13px', color: '#a1a1aa' }}>estwoodbizn@gmail.com</p>
+              </div>
+            </a>
+          </div>
         </div>
       </div>
     </div>

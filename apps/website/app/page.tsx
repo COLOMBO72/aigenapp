@@ -1,20 +1,23 @@
+'use client';
+import Header from './components/Header';
+
 export default function Home() {
   const services = [
-    {
-      icon: '🎨',
-      name: 'Velium Pictures',
-      tag: 'ИИ генерация изображений',
-      desc: 'Создавай уникальные изображения по текстовому описанию. Два режима — быстрый бесплатный и премиум с высоким качеством.',
-      color: '#7c3aed',
-      colorLight: 'rgba(124,58,237,0.15)',
-      colorBorder: 'rgba(124,58,237,0.3)',
-      href: '/services/pictures',
-      plans: [
-        '5 бесплатных генераций/день',
-        '50 Premium генераций в подписке',
-        '5₽ за доп. Premium генерацию',
-      ],
-    },
+    // {
+    //   icon: '🎨',
+    //   name: 'Velium Pictures',
+    //   tag: 'ИИ генерация изображений',
+    //   desc: 'Создавай уникальные изображения по текстовому описанию. Два режима — быстрый бесплатный и премиум с высоким качеством.',
+    //   color: '#7c3aed',
+    //   colorLight: 'rgba(124,58,237,0.15)',
+    //   colorBorder: 'rgba(124,58,237,0.3)',
+    //   href: '/services/pictures',
+    //   plans: [
+    //     '5 бесплатных генераций/день',
+    //     '50 Premium генераций в подписке',
+    //     '5₽ за доп. Premium генерацию',
+    //   ],
+    // },
     {
       icon: '🛡️',
       name: 'Velium VPN',
@@ -23,8 +26,8 @@ export default function Home() {
       color: '#0ea5e9',
       colorLight: 'rgba(14,165,233,0.15)',
       colorBorder: 'rgba(14,165,233,0.3)',
-      href: '/services/vpn',
-      plans: ['Бесплатный период 5 дней', 'Подписка 219₽/мес', 'Годовой план 1 890₽/год'],
+      href: '/dashboard/vpn',
+      plans: ['3 дня бесплатно', 'Базовый — 100₽/мес', 'Премиум — 180₽/мес'],
     },
   ];
 
@@ -71,85 +74,7 @@ export default function Home() {
       }}
     >
       {/* Header */}
-      <header
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          borderBottom: '1px solid #2a2a2a',
-          backgroundColor: 'rgba(10,10,10,0.85)',
-          backdropFilter: 'blur(16px)',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            padding: '0 24px',
-            height: '64px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <a
-            href="/"
-            style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}
-          >
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #7c3aed, #0ea5e9)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '16px',
-              }}
-            >
-              V
-            </div>
-            <span style={{ fontSize: '20px', fontWeight: 700, color: '#ffffff' }}>Velium</span>
-          </a>
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <a
-              href="#services"
-              style={{ color: '#a1a1aa', textDecoration: 'none', fontSize: '15px' }}
-            >
-              Сервисы
-            </a>
-            <a
-              href="#pricing"
-              style={{ color: '#a1a1aa', textDecoration: 'none', fontSize: '15px' }}
-            >
-              Тарифы
-            </a>
-            <a
-              href="#features"
-              style={{ color: '#a1a1aa', textDecoration: 'none', fontSize: '15px' }}
-            >
-              Преимущества
-            </a>
-            <a
-              href="/dashboard"
-              style={{
-                backgroundColor: '#7c3aed',
-                color: 'white',
-                padding: '9px 20px',
-                borderRadius: '10px',
-                textDecoration: 'none',
-                fontSize: '14px',
-                fontWeight: 600,
-              }}
-            >
-              Войти
-            </a>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero */}
       <section
@@ -532,7 +457,7 @@ export default function Home() {
             </div>
 
             {/* Pictures VIP */}
-            <div
+            {/* <div
               style={{
                 backgroundColor: '#141414',
                 borderRadius: '20px',
@@ -620,7 +545,7 @@ export default function Home() {
               >
                 Скоро
               </button>
-            </div>
+            </div> */}
 
             {/* VPN */}
             <div
@@ -628,9 +553,27 @@ export default function Home() {
                 backgroundColor: '#141414',
                 borderRadius: '20px',
                 padding: '28px',
-                border: '1px solid #2a2a2a',
+                border: '2px solid #0ea5e9',
+                position: 'relative',
               }}
             >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '-13px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: '#0ea5e9',
+                  color: 'white',
+                  padding: '3px 14px',
+                  borderRadius: '100px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                🔥 Популярный выбор
+              </div>
               <div style={{ fontSize: '20px', marginBottom: '8px' }}>🛡️</div>
               <p
                 style={{
@@ -646,11 +589,11 @@ export default function Home() {
               <div
                 style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '4px' }}
               >
-                <span style={{ fontSize: '40px', fontWeight: 800 }}>199₽</span>
+                <span style={{ fontSize: '40px', fontWeight: 800 }}>100₽</span>
                 <span style={{ color: '#a1a1aa', fontSize: '14px' }}>/мес</span>
               </div>
               <p style={{ color: '#52525b', fontSize: '12px', marginBottom: '20px' }}>
-                или 1 890₽/год
+                или 960₽/год
               </p>
               <div
                 style={{
@@ -661,10 +604,10 @@ export default function Home() {
                 }}
               >
                 {[
-                  '7 дней бесплатно',
-                  'Серверы в 10+ странах',
+                  '3 дня бесплатно',
+                  'Basic 10 Mbps — 100₽/мес',
+                  'Standard 20 Mbps — 180₽/мес',
                   'Без логов',
-                  'Безлимитный трафик',
                   'До 5 устройств',
                 ].map((i) => (
                   <div
@@ -676,23 +619,22 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <button
-                disabled
+              <a
+                href="/dashboard"
                 style={{
-                  width: '100%',
-                  backgroundColor: '#0ea5e9',
+                  display: 'block',
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
                   color: 'white',
                   padding: '12px',
                   borderRadius: '10px',
+                  textDecoration: 'none',
                   fontSize: '14px',
                   fontWeight: 600,
-                  border: 'none',
-                  cursor: 'not-allowed',
-                  opacity: 0.7,
                 }}
               >
-                Скоро
-              </button>
+                Попробовать бесплатно →
+              </a>
             </div>
           </div>
 
